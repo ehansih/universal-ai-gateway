@@ -1,0 +1,7 @@
+anthropic
+openai
+google-generativeai
+flask
+python-dotenv
+requests
+httpx
