@@ -1,7 +1,23 @@
+# Core
 anthropic
 openai
-google-generativeai
 flask
 python-dotenv
 requests
 httpx
+
+# Protocols
+google-generativeai      # Gemini
+paho-mqtt                # MQTT protocol
+grpcio                   # gRPC protocol
+grpcio-tools             # gRPC code generation
+
+# Agentic frameworks (optional)
+langchain                # LangChain protocol
+langchain-anthropic      # LangChain + Claude
+pyautogen                # AutoGen protocol
+
+# Tools
+# pip install paho-mqtt for MQTT
+# pip install grpcio grpcio-tools for gRPC
+# ollama must be installed separately: https://ollama.com

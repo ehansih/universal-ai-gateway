@@ -5,74 +5,192 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Universal AI Gateway</title>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: -apple-system, sans-serif; background: #0f0f0f; color: #e0e0e0; height: 100vh; display: flex; flex-direction: column; }
-  header { background: #1a1a2e; padding: 16px 24px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; }
-  header h1 { font-size: 20px; color: #7c83fd; }
-  .agents { display: flex; gap: 8px; }
-  .agent-badge { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
-  .agent-badge.on  { background: #1a3a2a; color: #4ade80; border: 1px solid #4ade80; }
-  .agent-badge.off { background: #3a1a1a; color: #f87171; border: 1px solid #f87171; }
-  .chat-area { flex: 1; overflow-y: auto; padding: 24px; display: flex; flex-direction: column; gap: 16px; }
-  .msg { max-width: 80%; padding: 14px 18px; border-radius: 12px; line-height: 1.6; white-space: pre-wrap; }
-  .msg.user { background: #1e3a5f; align-self: flex-end; border-bottom-right-radius: 4px; }
-  .msg.bot  { background: #1a1a2e; align-self: flex-start; border-bottom-left-radius: 4px; }
-  .msg .meta { font-size: 11px; color: #888; margin-bottom: 6px; }
-  .msg .rounds { margin-top: 10px; border-top: 1px solid #333; padding-top: 10px; }
-  .round { background: #111; border-radius: 8px; padding: 10px; margin-top: 8px; font-size: 13px; }
-  .round .round-title { color: #7c83fd; font-size: 11px; font-weight: 600; margin-bottom: 4px; }
-  .input-area { padding: 16px 24px; background: #1a1a2e; border-top: 1px solid #333; display: flex; gap: 10px; align-items: flex-end; }
-  textarea { flex: 1; background: #0f0f0f; color: #e0e0e0; border: 1px solid #444; border-radius: 10px; padding: 12px; font-size: 14px; resize: none; min-height: 48px; max-height: 150px; outline: none; }
-  textarea:focus { border-color: #7c83fd; }
-  select { background: #0f0f0f; color: #e0e0e0; border: 1px solid #444; border-radius: 8px; padding: 10px; font-size: 13px; outline: none; }
-  button { background: #7c83fd; color: white; border: none; border-radius: 10px; padding: 12px 20px; font-size: 14px; cursor: pointer; white-space: nowrap; }
-  button:hover { background: #6366f1; }
-  button:disabled { background: #444; cursor: not-allowed; }
-  .spinner { display: none; color: #888; font-size: 13px; align-self: center; }
-  .error { color: #f87171; }
-  .tag { display: inline-block; background: #2a2a4a; color: #a5b4fc; padding: 2px 8px; border-radius: 4px; font-size: 11px; margin-right: 4px; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, sans-serif; background: #0a0a0f; color: #e0e0e0; height: 100vh; display: flex; flex-direction: column; }
+
+header { background: #12121f; padding: 12px 20px; border-bottom: 1px solid #222; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+header h1 { font-size: 18px; color: #7c83fd; font-weight: 700; }
+
+.badges { display: flex; flex-wrap: wrap; gap: 6px; }
+.badge { padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; cursor: default; }
+.badge.agent-on  { background: #0f2a1a; color: #4ade80; border: 1px solid #4ade80; }
+.badge.agent-off { background: #2a0f0f; color: #f87171; border: 1px solid #f87171; }
+.badge.proto     { background: #1a1a3a; color: #a5b4fc; border: 1px solid #3a3a7a; }
+
+.tabs { display: flex; gap: 0; border-bottom: 1px solid #222; background: #12121f; }
+.tab  { padding: 8px 16px; font-size: 13px; cursor: pointer; color: #888; border-bottom: 2px solid transparent; }
+.tab.active { color: #7c83fd; border-bottom-color: #7c83fd; }
+
+.panel { display: none; flex: 1; overflow: hidden; flex-direction: column; }
+.panel.active { display: flex; }
+
+/* Chat panel */
+.chat-area { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.msg { max-width: 85%; padding: 12px 16px; border-radius: 12px; line-height: 1.6; white-space: pre-wrap; font-size: 14px; }
+.msg.user { background: #1e2a4a; align-self: flex-end; border-bottom-right-radius: 4px; }
+.msg.bot  { background: #12121f; align-self: flex-start; border: 1px solid #222; border-bottom-left-radius: 4px; }
+.msg .meta { font-size: 11px; color: #666; margin-bottom: 6px; display: flex; gap: 6px; flex-wrap: wrap; }
+.tag  { display: inline-block; background: #1a1a3a; color: #a5b4fc; padding: 2px 7px; border-radius: 4px; font-size: 11px; }
+.tag.green { background: #0f2a1a; color: #4ade80; }
+.tag.red   { background: #2a0f0f; color: #f87171; }
+.rounds { margin-top: 10px; border-top: 1px solid #222; padding-top: 10px; }
+.round  { background: #0a0a0f; border: 1px solid #222; border-radius: 8px; padding: 10px; margin-top: 8px; font-size: 13px; }
+.round-title { color: #7c83fd; font-size: 11px; font-weight: 600; margin-bottom: 4px; }
+
+.input-area { padding: 12px 16px; background: #12121f; border-top: 1px solid #222; display: flex; gap: 8px; align-items: flex-end; }
+textarea  { flex: 1; background: #0a0a0f; color: #e0e0e0; border: 1px solid #333; border-radius: 8px; padding: 10px; font-size: 14px; resize: none; min-height: 44px; max-height: 140px; outline: none; }
+textarea:focus { border-color: #7c83fd; }
+select { background: #0a0a0f; color: #e0e0e0; border: 1px solid #333; border-radius: 8px; padding: 8px 10px; font-size: 12px; outline: none; max-width: 140px; }
+button { background: #7c83fd; color: white; border: none; border-radius: 8px; padding: 10px 16px; font-size: 13px; cursor: pointer; }
+button:hover { background: #6366f1; }
+button:disabled { background: #333; cursor: not-allowed; }
+
+/* Status panel */
+.status-grid { padding: 16px; overflow-y: auto; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.card { background: #12121f; border: 1px solid #222; border-radius: 10px; padding: 14px; }
+.card h3 { font-size: 13px; color: #7c83fd; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; }
+.status-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #1a1a1a; font-size: 13px; }
+.status-row:last-child { border-bottom: none; }
+.dot { width: 8px; height: 8px; border-radius: 50%; }
+.dot.green { background: #4ade80; }
+.dot.red   { background: #f87171; }
+.dot.gray  { background: #666; }
+
+/* Tools panel */
+.tools-grid { padding: 16px; overflow-y: auto; }
+.tool-card { background: #12121f; border: 1px solid #222; border-radius: 10px; padding: 14px; margin-bottom: 12px; }
+.tool-card h3 { font-size: 14px; color: #e0e0e0; margin-bottom: 4px; }
+.tool-card p  { font-size: 12px; color: #888; margin-bottom: 10px; }
+.tool-input { display: flex; gap: 8px; }
+.tool-input input { flex: 1; background: #0a0a0f; color: #e0e0e0; border: 1px solid #333; border-radius: 6px; padding: 8px; font-size: 13px; outline: none; }
+.tool-result { margin-top: 8px; padding: 8px; background: #0a0a0f; border-radius: 6px; font-size: 12px; color: #4ade80; display: none; }
+
+.spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid #333; border-top-color: #7c83fd; border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
 </style>
 </head>
 <body>
 
 <header>
   <h1>⚡ Universal AI Gateway</h1>
-  <div class="agents" id="agentBadges">
+  <div class="badges">
     {% for agent in status.agents %}
-    <span class="agent-badge {{ 'on' if agent.available else 'off' }}">
-      {{ agent.name }}
-    </span>
+    <span class="badge {{ 'agent-on' if agent.available else 'agent-off' }}">{{ agent.name }}</span>
+    {% endfor %}
+    {% for proto in status.protocols %}
+    <span class="badge proto" title="{{ proto.description }}">{{ proto.name }}</span>
     {% endfor %}
   </div>
 </header>
 
-<div class="chat-area" id="chatArea">
-  <div class="msg bot">
-    <div class="meta">System</div>
-    Welcome! Ask anything. Choose a mode:<br><br>
-    <b>Auto</b> — smartly picks the best AI for your question<br>
-    <b>Collaborate</b> — multiple AIs debate and give one best answer (MACP)<br>
-    <b>Ask All</b> — get answers from all available AIs
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('chat', this)">Chat</div>
+  <div class="tab" onclick="switchTab('status', this)">Status</div>
+  <div class="tab" onclick="switchTab('tools', this)">Tools</div>
+</div>
+
+<!-- CHAT PANEL -->
+<div id="panel-chat" class="panel active">
+  <div class="chat-area" id="chatArea">
+    <div class="msg bot">
+      <div class="meta"><span class="tag">System</span></div>
+      Ask anything. Choose a mode below:
+      <br><br>
+      <b>auto</b> — best AI for your task type<br>
+      <b>collaborate</b> — AI agents debate (MACP)<br>
+      <b>all</b> — answers from all AIs<br>
+      <b>stream</b> — real-time streaming<br>
+      <b>mcp/a2a/acp/assistants/langchain/autogen/grpc/mqtt/graphql</b> — specific protocol
+    </div>
+  </div>
+  <div class="input-area">
+    <select id="modeSelect">
+      <option value="auto">Auto</option>
+      <option value="collaborate">Collaborate (MACP)</option>
+      <option value="all">Ask All</option>
+      <option value="stream">Stream</option>
+      <optgroup label="── Protocols ──">
+        <option value="mcp">MCP</option>
+        <option value="a2a">A2A (Google)</option>
+        <option value="acp">ACP (IBM)</option>
+        <option value="assistants">OpenAI Assistants</option>
+        <option value="langchain">LangChain</option>
+        <option value="autogen">AutoGen</option>
+        <option value="grpc">gRPC</option>
+        <option value="mqtt">MQTT</option>
+        <option value="graphql">GraphQL</option>
+      </optgroup>
+      <optgroup label="── Agents ──">
+        <option value="claude">Claude only</option>
+        <option value="chatgpt">ChatGPT only</option>
+        <option value="gemini">Gemini only</option>
+        <option value="ollama">Ollama only</option>
+      </optgroup>
+    </select>
+    <textarea id="questionInput" placeholder="Ask anything... (Enter to send, Shift+Enter for newline)"
+      onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendQuestion();}"></textarea>
+    <button id="sendBtn" onclick="sendQuestion()">Send</button>
   </div>
 </div>
 
-<div class="input-area">
-  <select id="modeSelect">
-    <option value="auto">Auto</option>
-    <option value="collaborate">Collaborate</option>
-    <option value="all">Ask All</option>
-    <option value="claude">Claude only</option>
-    <option value="chatgpt">ChatGPT only</option>
-    <option value="gemini">Gemini only</option>
-    <option value="ollama">Ollama only</option>
-  </select>
-  <textarea id="questionInput" placeholder="Ask anything..." rows="1"
-    onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault();sendQuestion();}"></textarea>
-  <button id="sendBtn" onclick="sendQuestion()">Send</button>
-  <span class="spinner" id="spinner">Thinking...</span>
+<!-- STATUS PANEL -->
+<div id="panel-status" class="panel">
+  <div class="status-grid">
+    <div class="card">
+      <h3>AI Agents</h3>
+      {% for agent in status.agents %}
+      <div class="status-row">
+        <span>{{ agent.name }} <small style="color:#666">{{ agent.model }}</small></span>
+        <div class="dot {{ 'green' if agent.available else 'red' }}"></div>
+      </div>
+      {% endfor %}
+    </div>
+    <div class="card">
+      <h3>Protocols ({{ status.protocols|length }})</h3>
+      {% for proto in status.protocols %}
+      <div class="status-row" title="{{ proto.description }}">
+        <span style="font-size:12px">{{ proto.name }}</span>
+        <div class="dot {{ 'green' if proto.status == 'available' else ('gray' if proto.status == 'not_configured' else 'red') }}"></div>
+      </div>
+      {% endfor %}
+    </div>
+    <div class="card" style="grid-column: 1 / -1;">
+      <h3>Protocol Descriptions</h3>
+      {% for proto in status.protocols %}
+      <div class="status-row">
+        <span class="tag">{{ proto.name }}</span>
+        <span style="font-size:12px;color:#888;text-align:right;max-width:70%">{{ proto.description }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- TOOLS PANEL -->
+<div id="panel-tools" class="panel">
+  <div class="tools-grid">
+    {% for tool in status.tools %}
+    <div class="tool-card">
+      <h3>{{ tool.name }}</h3>
+      <p>{{ tool.description }}</p>
+      <div class="tool-input">
+        <input type="text" id="tool-input-{{ tool.name }}" placeholder="Enter input...">
+        <button onclick="runTool('{{ tool.name }}')">Run</button>
+      </div>
+      <div class="tool-result" id="tool-result-{{ tool.name }}"></div>
+    </div>
+    {% endfor %}
+  </div>
 </div>
 
 <script>
+function switchTab(name, el) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  el.classList.add('active');
+}
+
 function addMessage(role, content, meta) {
   const area = document.getElementById("chatArea");
   const div = document.createElement("div");
@@ -81,35 +199,40 @@ function addMessage(role, content, meta) {
   div.innerHTML += content;
   area.appendChild(div);
   area.scrollTop = area.scrollHeight;
+  return div;
 }
 
 function formatResult(data) {
-  if (data.error) return `<span class="error">${data.error}</span>`;
+  if (data.error) return `<span style="color:#f87171">${data.error}</span>`;
 
-  if (data.mode === "auto") {
-    return `<span class="tag">${data.agent}</span><span class="tag">${data.task_type}</span><br><br>${data.answer}`;
+  const tools = data.tools_used?.length ? `<span class="tag green">tools: ${data.tools_used.join(', ')}</span>` : '';
+
+  if (data.mode === "auto" || data.mode === "specific") {
+    return `<span class="tag">${data.agent || ''}</span><span class="tag">${data.task_type || ''}</span>${tools}<br><br>${data.answer || ''}`;
   }
-
   if (data.mode === "collaborate") {
-    let html = `<span class="tag">MACP Collaboration</span><span class="tag">${data.task_type}</span><br><br>`;
-    html += `<b>Final Answer:</b><br>${data.final}`;
-    html += `<div class="rounds"><b style="font-size:12px;color:#888;">Collaboration Rounds:</b>`;
-    for (const r of data.rounds) {
-      html += `<div class="round"><div class="round-title">Round ${r.round} — ${r.agent}</div>${r.content}</div>`;
+    let html = `<span class="tag">MACP</span><span class="tag">${data.task_type||''}</span>${tools}<br><br><b>Final Answer:</b><br>${data.final||''}`;
+    if (data.rounds?.length) {
+      html += `<div class="rounds"><b style="font-size:11px;color:#666">Rounds:</b>`;
+      data.rounds.forEach(r => {
+        html += `<div class="round"><div class="round-title">Round ${r.round} — ${r.agent}</div>${r.content}</div>`;
+      });
+      html += `</div>`;
     }
-    html += `</div>`;
     return html;
   }
-
   if (data.mode === "all") {
-    let html = `<span class="tag">All Agents</span><span class="tag">${data.task_type}</span><br>`;
-    for (const r of data.responses) {
-      html += `<div class="round"><div class="round-title">${r.agent}</div>${r.success ? r.answer : `<span class="error">Failed: ${r.answer}</span>`}</div>`;
-    }
+    let html = `<span class="tag">All Agents</span><span class="tag">${data.task_type||''}</span>`;
+    data.responses?.forEach(r => {
+      html += `<div class="round"><div class="round-title">${r.agent}</div>${r.success ? r.answer : `<span style="color:#f87171">Failed</span>`}</div>`;
+    });
     return html;
   }
-
-  return data.answer || data.final || JSON.stringify(data);
+  if (data.mode?.startsWith("protocol:")) {
+    const proto = data.mode.split(":")[1];
+    return `<span class="tag">${proto.toUpperCase()}</span><br><br>${data.answer || data.error || JSON.stringify(data.metadata||{}, null, 2)}`;
+  }
+  return data.answer || data.final || JSON.stringify(data, null, 2);
 }
 
 async function sendQuestion() {
@@ -117,27 +240,56 @@ async function sendQuestion() {
   const mode = document.getElementById("modeSelect").value;
   if (!q) return;
 
-  addMessage("user", q, null);
+  addMessage("user", q.replace(/</g,'&lt;'), null);
   document.getElementById("questionInput").value = "";
   document.getElementById("sendBtn").disabled = true;
-  document.getElementById("spinner").style.display = "inline";
+
+  if (mode === "stream") {
+    const msgDiv = addMessage("bot", `<div class="meta"><span class="tag">STREAM</span></div><span id="stream-content"></span>`, null);
+    const contentEl = document.getElementById("stream-content");
+    const es = new EventSource(`/stream?question=${encodeURIComponent(q)}&provider=claude`);
+    es.onmessage = (e) => {
+      const data = JSON.parse(e.data);
+      if (data.done) { es.close(); document.getElementById("sendBtn").disabled = false; }
+      else if (data.error) { contentEl.innerHTML += `<span style="color:#f87171">${data.error}</span>`; es.close(); document.getElementById("sendBtn").disabled = false; }
+      else { contentEl.textContent += data.token; document.getElementById("chatArea").scrollTop = 99999; }
+    };
+    es.onerror = () => { es.close(); document.getElementById("sendBtn").disabled = false; };
+    return;
+  }
 
   try {
     const res = await fetch("/ask", {
       method: "POST",
       headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({question: q, mode})
+      body: JSON.stringify({question: q, mode, session_id: "default"})
     });
     const data = await res.json();
-    addMessage("bot", formatResult(data), mode.toUpperCase());
-  } catch (e) {
-    addMessage("bot", `<span class="error">Request failed: ${e.message}</span>`, "Error");
+    addMessage("bot", formatResult(data), `<span class="tag">${mode.toUpperCase()}</span>`);
+  } catch(e) {
+    addMessage("bot", `<span style="color:#f87171">Error: ${e.message}</span>`, null);
   }
-
   document.getElementById("sendBtn").disabled = false;
-  document.getElementById("spinner").style.display = "none";
+}
+
+async function runTool(name) {
+  const input = document.getElementById(`tool-input-${name}`).value;
+  const resultEl = document.getElementById(`tool-result-${name}`);
+  resultEl.style.display = "block";
+  resultEl.textContent = "Running...";
+  try {
+    const res = await fetch("/tool/run", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({tool: name, input})
+    });
+    const data = await res.json();
+    resultEl.textContent = data.result;
+  } catch(e) {
+    resultEl.textContent = `Error: ${e.message}`;
+    resultEl.style.color = "#f87171";
+  }
 }
 </script>
-
 </body>
 </html>
