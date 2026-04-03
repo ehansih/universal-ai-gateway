@@ -1,3 +1,15 @@
+<div align="center">
+
+# 🌐 Universal AI Gateway
+
+Universal gateway for all AI agents — Claude, ChatGPT, Gemini, Ollama with MACP collaboration protocol.
+
+![Python](https://img.shields.io/badge/python-3.10+-blue?logo=python) ![Claude](https://img.shields.io/badge/Claude-AI-orange) ![ChatGPT](https://img.shields.io/badge/ChatGPT-AI-green) ![Gemini](https://img.shields.io/badge/Gemini-AI-blue) ![Last Commit](https://img.shields.io/github/last-commit/ehansih/universal-ai-gateway)
+
+</div>
+
+---
+
 # Universal AI Gateway
 
 A unified gateway that connects to all major AI agents — Claude, ChatGPT, Gemini, and local models via Ollama — and lets them collaborate using the **MACP (Multi-Agent Collaboration Protocol)**. Supports every major AI-to-AI communication protocol known as of 2026.
